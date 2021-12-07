@@ -31,3 +31,4 @@
 *.out
 *.app
 diffs_odu.xcodeproj/project.xcworkspace/xcuserdata
+Build

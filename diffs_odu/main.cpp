@@ -7,6 +7,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <map>
+
 double q(double x) {
  //   return exp(x) * x;
     return sin(x * x) - 3.0 / x;
@@ -17,7 +19,7 @@ double dq_dx(double x) {
     return 2.0*x * cos(x * x) + 3.0 / x / x;
 }
 
-double f(double x, double y, double k = 3) {
+double f(double x, double y, double k = 1) {
    // return exp(x) + y;
     return dq_dx(x) + k * (y - q(x));
 }
@@ -152,10 +154,12 @@ void solve3_a(double a, double b, const int n, std::vector<double> xs, std::vect
         double y = ys[i-1] + h * f(xs[i-1], ys[i-1]);
         double y_next;
     
+        size_t c = 0;
         while (true) {
-            y_next = y + 0.5 * h * (f(xs[i-1], ys[i-1]) + f(xs[i], y));
+            c++;
+            y_next = ys[i-1] + 0.5 * h * (f(xs[i-1], ys[i-1]) + f(xs[i], y));
             
-            if (abs(y_next - y) / abs(y) <= lambda) {
+            if (abs(y_next - y) / abs(y) <= lambda || c > 5000) {
                 ys[i] = y_next;
                 break;
             } else {
@@ -197,10 +201,13 @@ void solve3_b(double a, double b, const int n, std::vector<double> xs, std::vect
         double y = ys[i-1] + h / 24 * (55 * f(xs[i-1], ys[i-1]) - 59 * f(xs[i-2], ys[i-2]) + 37 * f(xs[i-3], ys[i-3]) - 9 * f(xs[i-4], ys[i-4]));
         double y_next;
     
+        
+        size_t c = 0;
         while (true) {
+            c++;
             y_next = ys[i-1] + h / 24 * (9 * f(xs[i], y) + 19 * f(xs[i-1], ys[i-1]) - 5 * f(xs[i-2], ys[i-2]) + f(xs[i-3], ys[i-3]));
             
-            if (abs(y_next - y) / abs(y)< lambda) {
+            if (abs(y_next - y) / abs(y)< lambda || c > 5000) {
                 ys[i] = y_next;
                 break;
             } else {
@@ -309,11 +316,13 @@ void solve5(double a, double b, const int n, std::vector<double> xs, std::vector
     
         double y_next;
     
+        size_t c = 0;
         while (true) {
+            c++;
             y_next =  ( h * f(xs[i], y) - a1 * f(xs[i-1], ys[i-1])  - a3 * f(xs[i-3], ys[i-3]) - a4 * f(xs[i-4], ys[i-4]) - a2 * f(xs[i-2], ys[i-2]) ) / a0;
        
             
-            if (abs(y_next - y) < lambda) {
+            if (abs(y_next - y) < lambda || c > 5000) {
                 ys[i] = y_next;
                 break;
             } else {
@@ -405,20 +414,67 @@ const char* methodName(int i) {
 }
 
 
+double methodP(int i) {
+    switch (i) {
+        case 1:
+            return 1;
+            break;
+        case 2:
+            return 4;
+            break;
+        case 3:
+            return 2;
+        case 4:
+            return 4;
+        case 5:
+            return 3;
+        case 6:
+            return 4;
+        case 7:
+            return 4;
+        default:
+            return 1;
+            break;
+    }
+}
+
+
 int main(int argc, const char * argv[]) {
     
 
     const double a = 0.5;
     const double b = 3;
     
-    auto methods = {/*&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b, */&solve5};
+    const size_t MAX_NUM = 5200;
+    
+    auto methods = {&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b, &solve5};
 //
 //    const double a = 0;
 //    const double b = 1;
     
     std::cout << "n" << "\t\t" << "maxEps" << "\t\t" << "ro" << std::endl;
+    char filename[100];
+    sprintf(filename, "method_EPS_MAX.csv");
+    std::ofstream file_max_eps(filename, std::ofstream::out);
+    file_max_eps << std::fixed;
+    file_max_eps.precision(9);
     
-    for (int n = 5; n < 5200; n *= 2) {
+    file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r, 5, p*, r" << std::endl;
+    
+    std::map<std::string, double> last_eps_max;
+    last_eps_max["1"] = -1;
+    last_eps_max["2"] = -1;
+    last_eps_max["3A"] = -1;
+    last_eps_max["3B"] = -1;
+    last_eps_max["4A"] = -1;
+    last_eps_max["4B"] = -1;
+    last_eps_max["5"] = -1;
+    
+    
+    for (int n = 5; n < MAX_NUM; n *= 2) {
+        std:: cout << std::endl << std::setw(6) << n ;
+        file_max_eps << n << ", ";
+        
         std::vector<double> xs(n + 1);
         
         double h = (b - a) / n;
@@ -438,7 +494,7 @@ int main(int argc, const char * argv[]) {
         }
         
         
-
+        
         
         // ================================================================
         int count = 0;
@@ -446,7 +502,7 @@ int main(int argc, const char * argv[]) {
             count++;
             method(a, b, n, xs, ys, eps, rs);
             
-            char filename[100];
+           
             sprintf(filename, "method_%s_%d.txt", methodName(count), n);
             std::ofstream file(filename, std::ofstream::out);
             file.precision(15);
@@ -457,11 +513,28 @@ int main(int argc, const char * argv[]) {
            
             
             double maxEps = *std::max_element(std::begin(eps), std::end(eps));
-
-            std::cout << n << "\t\t" << maxEps << "\t\t" << maxEps / h/h/h/h << std::endl;
+            file_max_eps << maxEps;
+            
+            file_max_eps << ", ";
+            
+            
+            double prev_eps_max = last_eps_max[methodName(count)];
+            last_eps_max[methodName(count)] = maxEps;
+            if (prev_eps_max < 0) {
+                file_max_eps << "-42";
+            } else {
+                file_max_eps <<log2(prev_eps_max / maxEps) << ", " << abs(prev_eps_max - maxEps) / pow(2.0, methodP(count));
+            }
+            file_max_eps << ", ";
+            
+            std::cout << std::setw(15) << (abs(prev_eps_max - maxEps) < 0.001 ? h : -1) ;
+            
+            //std::cout << n << "\t\t" << maxEps << "\t\t" << maxEps / h/h/h/h << std::endl;
         }
     
-
+        if (n * 2 < MAX_NUM) {
+            file_max_eps << "\n";
+        }
             
         
             
