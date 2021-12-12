@@ -2,12 +2,12 @@ import os
 
 ns = [10, 80, 1280, 20480]
 ms = [  
-        ("1", "#0533ed"),
-        ("2", "#00FF00"),
-        ("3A", "#FF0000"),
-         ("3B", "#0000FF"),
-        ("4A", "#777777"),
-        ("4B", "#FF00FF"),
+        ("no", "#d6a100"),
+        ("L2", "#00FF00"),
+        ("L3", "#FF0000"),
+         ("L5", "#0000FF"),
+        ("L7", "#777777"),
+        ("L10", "#FF00FF"),
          #("5",  "#00FFFF")
     ]
 
@@ -78,12 +78,12 @@ w = w[1:]
 file.close()
 
 ms = [  
-        ("1", 0, 1, "#0533ed"),
-        ("2",1, 4, "#00FF00"),
-        ("3A", 2, 2, "#FF0000"),
-        ("3B", 3, 4, "#0000FF"),
-        ("4A", 4, 3, "#777777"),
-        ("4B", 5, 4, "#FF00FF"),
+        ("no", 0, 1, "#d6a100"),
+        ("L2",1, 4, "#00FF00"),
+        ("L3", 2, 2, "#FF0000"),
+        ("L5", 3, 4, "#0000FF"),
+        ("L7", 4, 3, "#777777"),
+        ("L10", 5, 4, "#FF00FF"),
        #  ("5",  6, 4)  "#00FFFF")
     ] 
 
@@ -91,10 +91,10 @@ ms = [
 
 
 plot_eps =  f"""
-set terminal png enhanced font 'Verdana,9';
+set terminal png size 3000, 800 enhanced font 'Verdana,9';
 set output 'plot_eps_max_all.png';
 
-set size ratio 0.5;
+set size ratio 0.25 {1,1};
 
 set format xy "%g";
 
@@ -135,10 +135,10 @@ for (name, i, p, color) in  ms:
     
     file.close()
     #file_plt.close()
-for p in p:
-    
+for p in ps:
+    plot_eps += f'f{p}(x) title "N**-{p}" with lines linestyle 1 linewidth 2, '
 
 file_plt = open(f"max_exp_all.plt", "w+") 
-file_plt.write(plot_eps)
+file_plt.write(plot_eps.strip().strip(','))
 file_plt.close()
 os.system(f"gnuplot max_exp_all.plt")

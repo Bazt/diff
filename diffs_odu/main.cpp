@@ -136,8 +136,9 @@ void solve2(double A, double B, const int N, std::vector<double> xs, std::vector
       
 }
 
-void solve3_a(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
-    double lambda = 0.001;
+
+void solve3_a_general(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs, double lambda) {
+
     
     ys.clear();
     ys.resize(n + 1);
@@ -159,7 +160,7 @@ void solve3_a(double a, double b, const int n, std::vector<double> xs, std::vect
             c++;
             y_next = ys[i-1] + 0.5 * h * (f(xs[i-1], ys[i-1]) + f(xs[i], y));
             
-            if (abs(y_next - y) / abs(y) <= lambda || c > 5000) {
+            if (abs(y_next - y) / abs(y) <= lambda || c > 50000) {
                 ys[i] = y_next;
                 break;
             } else {
@@ -171,6 +172,9 @@ void solve3_a(double a, double b, const int n, std::vector<double> xs, std::vect
     for (int i = 0; i <= n; i++) {
         eps[i] = abs(q(xs[i]) - ys[i]);
     }
+}
+void solve3_a(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    solve3_a_general(a, b, n, xs, ys, eps, rs, 0.001);
 }
 
 void solve3_b(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
@@ -207,7 +211,7 @@ void solve3_b(double a, double b, const int n, std::vector<double> xs, std::vect
             c++;
             y_next = ys[i-1] + h / 24 * (9 * f(xs[i], y) + 19 * f(xs[i-1], ys[i-1]) - 5 * f(xs[i-2], ys[i-2]) + f(xs[i-3], ys[i-3]));
             
-            if (abs(y_next - y) / abs(y)< lambda || c > 5000) {
+            if (abs(y_next - y) / abs(y)< lambda || c > 50000) {
                 ys[i] = y_next;
                 break;
             } else {
@@ -322,7 +326,7 @@ void solve5(double a, double b, const int n, std::vector<double> xs, std::vector
             y_next =  ( h * f(xs[i], y) - a1 * f(xs[i-1], ys[i-1])  - a3 * f(xs[i-3], ys[i-3]) - a4 * f(xs[i-4], ys[i-4]) - a2 * f(xs[i-2], ys[i-2]) ) / a0;
        
             
-            if (abs(y_next - y) < lambda || c > 5000) {
+            if (abs(y_next - y) < lambda || c > 50000) {
                 ys[i] = y_next;
                 break;
             } else {
@@ -334,6 +338,59 @@ void solve5(double a, double b, const int n, std::vector<double> xs, std::vector
     for (int i = 0; i <= n; i++) {
         eps[i] = abs(q(xs[i]) - ys[i]);
     }
+}
+
+void solve3_a_no(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    double lambda = 0.001;
+    
+    ys.clear();
+    ys.resize(n + 1);
+    
+    eps.clear();
+    eps.resize(n + 1);
+    
+    double h = (b - a) / n;
+    ys[0] = q(a);
+    
+    
+    
+    for (int i = 1; i <= n; i++) {
+        double y = ys[i-1] + h * f(xs[i-1], ys[i-1]);
+        double y_next;
+    
+        size_t c = 0;
+        while (true) {
+            c++;
+            y_next = ys[i-1] + 0.5 * h * (f(xs[i-1], ys[i-1]) + f(xs[i], y));
+            
+            if (abs(y_next - y) / abs(y) <= lambda || c > 50000 | true) {
+                ys[i] = y_next;
+                break;
+            } else {
+                y = y_next;
+            }
+        }
+    }
+    
+    for (int i = 0; i <= n; i++) {
+        eps[i] = abs(q(xs[i]) - ys[i]);
+    }
+}
+
+void solve3_a_2(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    solve3_a_general(a, b, n, xs, ys, eps, rs, 1e-2);
+}
+void solve3_a_3(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    solve3_a_general(a, b, n, xs, ys, eps, rs, 1e-3);
+}
+void solve3_a_5(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    solve3_a_general(a, b, n, xs, ys, eps, rs, 1e-5);
+}
+void solve3_a_7(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    solve3_a_general(a, b, n, xs, ys, eps, rs, 1e-7);
+}
+void solve3_a_10(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    solve3_a_general(a, b, n, xs, ys, eps, rs, 1e-10);
 }
 
 //void solve5(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
@@ -392,19 +449,19 @@ void solve5(double a, double b, const int n, std::vector<double> xs, std::vector
 const char* methodName(int i) {
     switch (i) {
         case 1:
-            return "1";
+            return "no";
             break;
         case 2:
-            return "2";
+            return "L2";
             break;
         case 3:
-            return "3A";
+            return "L3";
         case 4:
-            return "3B";
+            return "L5";
         case 5:
-            return "4A";
+            return "L7";
         case 6:
-            return "4B";
+            return "L10";
         case 7:
             return "5";
         default:
@@ -447,7 +504,8 @@ int main(int argc, const char * argv[]) {
     
     const size_t MAX_NUM = 50000;
     
-    auto methods = {&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b/*, &solve5*/};
+   // auto methods = {&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b/*, &solve5*/};
+    auto methods = {&solve3_a_no, &solve3_a_2, &solve3_a_3, &solve3_a_5, &solve3_a_7, &solve3_a_10/*, &solve5*/};
 //
 //    const double a = 0;
 //    const double b = 1;
@@ -459,7 +517,7 @@ int main(int argc, const char * argv[]) {
     file_max_eps << std::fixed;
     file_max_eps.precision(15);
     
-    file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r" << std::endl;
+    file_max_eps << "N, no, p*, r, -2, p*, r, -3, p*, r, -5, p*, r, -7, p*, r, -10, p*, r" << std::endl;
     //file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r, 5, p*, r" << std::endl;
     
     std::map<std::string, double> last_eps_max;
