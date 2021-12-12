@@ -445,9 +445,9 @@ int main(int argc, const char * argv[]) {
     const double a = 0.5;
     const double b = 3;
     
-    const size_t MAX_NUM = 5200;
+    const size_t MAX_NUM = 50000;
     
-    auto methods = {&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b, &solve5};
+    auto methods = {&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b/*, &solve5*/};
 //
 //    const double a = 0;
 //    const double b = 1;
@@ -457,9 +457,10 @@ int main(int argc, const char * argv[]) {
     sprintf(filename, "method_EPS_MAX.csv");
     std::ofstream file_max_eps(filename, std::ofstream::out);
     file_max_eps << std::fixed;
-    file_max_eps.precision(9);
+    file_max_eps.precision(15);
     
-    file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r, 5, p*, r" << std::endl;
+    file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r" << std::endl;
+    //file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r, 5, p*, r" << std::endl;
     
     std::map<std::string, double> last_eps_max;
     last_eps_max["1"] = -1;
@@ -468,7 +469,7 @@ int main(int argc, const char * argv[]) {
     last_eps_max["3B"] = -1;
     last_eps_max["4A"] = -1;
     last_eps_max["4B"] = -1;
-    last_eps_max["5"] = -1;
+   // last_eps_max["5"] = -1;
     
     
     for (int n = 5; n < MAX_NUM; n *= 2) {
@@ -505,7 +506,7 @@ int main(int argc, const char * argv[]) {
            
             sprintf(filename, "method_%s_%d.txt", methodName(count), n);
             std::ofstream file(filename, std::ofstream::out);
-            file.precision(15);
+            file.precision(16);
             
             for (int i = 0; i <= n; i++) {
                 file << std::fixed << xs[i] << '\t' << std::fixed << ys[i] << '\n';
@@ -521,13 +522,13 @@ int main(int argc, const char * argv[]) {
             double prev_eps_max = last_eps_max[methodName(count)];
             last_eps_max[methodName(count)] = maxEps;
             if (prev_eps_max < 0) {
-                file_max_eps << "-42";
+                file_max_eps << "-42, -42";
             } else {
-                file_max_eps <<log2(prev_eps_max / maxEps) << ", " << abs(prev_eps_max - maxEps) / pow(2.0, methodP(count));
+                file_max_eps <<log2(prev_eps_max / maxEps) << ", " << abs(prev_eps_max - maxEps) / (pow(2.0, methodP(count)) - 1.0);
             }
             file_max_eps << ", ";
             
-            std::cout << std::setw(15) << (abs(prev_eps_max - maxEps) < 0.001 ? h : -1) ;
+            std::cout << std::setw(16) << (abs(prev_eps_max - maxEps) < 0.001 ? h : -1) ;
             
             //std::cout << n << "\t\t" << maxEps << "\t\t" << maxEps / h/h/h/h << std::endl;
         }
