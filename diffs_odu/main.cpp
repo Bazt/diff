@@ -336,69 +336,164 @@ void solve5(double a, double b, const int n, std::vector<double> xs, std::vector
     }
 }
 
-//void solve5(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
-//    double lambda = 0.1;
-//
-//    ys.clear();
-//    ys.resize(n + 1);
-//
-//    eps.clear();
-//    eps.resize(n + 1);
-//
-//    double h = (b - a) / n;
-//    ys[0] = q(a);
-//
-//    double k1, k2, k3, k4;
-//
-//    for (int i = 1; i <= 3; i++) {
-//        k1 = h * f(xs[i-1], ys[i-1]);
-//        k2 = h * f(xs[i-1] + h / 2, ys[i-1] + k1 / 2);
-//        k3 = h * f(xs[i-1] + h / 2, ys[i-1] + k2 / 2);
-//        k4 = h * f(xs[i-1] + h, ys[i-1] + k3);
-//
-//        ys[i] = ys[i-1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6;
-//    }
-//
-//
-//    double a0 = 25.0 / 12;
-//    double a1 = -48.0/12;
-//    double a2 = 36.0/12;
-//    double a3 = -16.0 / 12;
-//    double a4 = 3.0/12;
-//
-//
-//    for (int i = 4; i <= n; i++) {
-//        double y = ys[i-1] + h * f(xs[i-1], ys[i-1]);
-//        double y_next;
-//
-//        while (true) {
-//            y_next = h  * f(xs[i], y) - (a1 * f(xs[i-1], ys[i-1]) + a2 * f(xs[i-2], ys[i-2]) + a3 * f(xs[i-3], ys[i-3]) + a4 * f(xs[i-4], ys[i-4]));
-//            y_next /= a0;
-//
-//            if (abs(y_next - y) < lambda) {
-//                ys[i] = y_next;
-//                break;
-//            } else {
-//                y = y_next;
-//            }
-//        }
-//    }
-//
-//    for (int i = 0; i <= n; i++) {
-//        eps[i] = abs(q(xs[i]) - ys[i]);
-//    }
-//}
+
+void solve3_b_runge4(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    double lambda = 0.001;
+    
+    ys.clear();
+    ys.resize(n + 1);
+    
+    eps.clear();
+    eps.resize(n + 1);
+    
+    double h = (b - a) / n;
+    ys[0] = q(a);
+    
+    double k1, k2, k3, k4;
+    
+    for (int i = 1; i <= 3; i++) {
+        k1 = h * f(xs[i-1], ys[i-1]);
+        k2 = h * f(xs[i-1] + h / 2, ys[i-1] + k1 / 2);
+        k3 = h * f(xs[i-1] + h / 2, ys[i-1] + k2 / 2);
+        k4 = h * f(xs[i-1] + h, ys[i-1] + k3);
+        
+        ys[i] = ys[i-1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+    }
+    
+    for (int i = 4; i <= n; i++) {
+        //явный адамса
+        double y = ys[i-1] + h / 24 * (55 * f(xs[i-1], ys[i-1]) - 59 * f(xs[i-2], ys[i-2]) + 37 * f(xs[i-3], ys[i-3]) - 9 * f(xs[i-4], ys[i-4]));
+        double y_next;
+    
+        
+        size_t c = 0;
+        while (true) {
+            c++;
+            y_next = ys[i-1] + h / 24 * (9 * f(xs[i], y) + 19 * f(xs[i-1], ys[i-1]) - 5 * f(xs[i-2], ys[i-2]) + f(xs[i-3], ys[i-3]));
+            
+            if (abs(y_next - y) / abs(y)< lambda || c > 5000) {
+                ys[i] = y_next;
+                break;
+            } else {
+                y = y_next;
+              //  std::cout << y_next << std::endl;
+            }
+        }
+    }
+    
+    for (int i = 0; i <= n; i++) {
+        eps[i] = abs(q(xs[i]) - ys[i]);
+    }
+}
+
+void solve3_b_runge3(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    double lambda = 0.001;
+    
+    ys.clear();
+    ys.resize(n + 1);
+    
+    eps.clear();
+    eps.resize(n + 1);
+    
+    double h = (b - a) / n;
+    ys[0] = q(a);
+    
+    double k1, k2, k3;
+    
+
+    
+    for (int i = 1; i <= 3; i++) {
+        k1 = h * f(xs[i-1], ys[i-1]);
+        k2 = h * f(xs[i-1] + h /2, ys[i-1] + k1 / 2);
+        k3 = h * f(xs[i-1] + h, ys[i-1] - k1 + 2 * k2);
+        
+        ys[i] = ys[i-1] + (k1 + 4 * k2 + k3) / 6;
+    }
+    
+    for (int i = 4; i <= n; i++) {
+        //явный адамса
+        double y = ys[i-1] + h / 24 * (55 * f(xs[i-1], ys[i-1]) - 59 * f(xs[i-2], ys[i-2]) + 37 * f(xs[i-3], ys[i-3]) - 9 * f(xs[i-4], ys[i-4]));
+        double y_next;
+    
+        
+        size_t c = 0;
+        while (true) {
+            c++;
+            y_next = ys[i-1] + h / 24 * (9 * f(xs[i], y) + 19 * f(xs[i-1], ys[i-1]) - 5 * f(xs[i-2], ys[i-2]) + f(xs[i-3], ys[i-3]));
+            
+            if (abs(y_next - y) / abs(y)< lambda || c > 5000) {
+                ys[i] = y_next;
+                break;
+            } else {
+                y = y_next;
+              //  std::cout << y_next << std::endl;
+            }
+        }
+    }
+    
+    for (int i = 0; i <= n; i++) {
+        eps[i] = abs(q(xs[i]) - ys[i]);
+    }
+}
+
+void solve3_b_euler(double a, double b, const int n, std::vector<double> xs, std::vector<double> &ys, std::vector<double> &eps, std::vector<double> rs) {
+    double lambda = 0.001;
+    
+    ys.clear();
+    ys.resize(n + 1);
+    
+    eps.clear();
+    eps.resize(n + 1);
+    
+    double h = (b - a) / n;
+    ys[0] = q(a);
+    
+
+    
+
+    
+    for (int i = 1; i <= 3; i++) {
+
+        ys[i] = ys[i-1] + h * f(xs[i-1], ys[i-1]);
+    }
+    
+    for (int i = 4; i <= n; i++) {
+        //явный адамса
+        double y = ys[i-1] + h / 24 * (55 * f(xs[i-1], ys[i-1]) - 59 * f(xs[i-2], ys[i-2]) + 37 * f(xs[i-3], ys[i-3]) - 9 * f(xs[i-4], ys[i-4]));
+        double y_next;
+    
+        
+        size_t c = 0;
+        while (true) {
+            c++;
+            y_next = ys[i-1] + h / 24 * (9 * f(xs[i], y) + 19 * f(xs[i-1], ys[i-1]) - 5 * f(xs[i-2], ys[i-2]) + f(xs[i-3], ys[i-3]));
+            
+            if (abs(y_next - y) / abs(y)< lambda || c > 5000) {
+                ys[i] = y_next;
+                break;
+            } else {
+                y = y_next;
+              //  std::cout << y_next << std::endl;
+            }
+        }
+    }
+    
+    for (int i = 0; i <= n; i++) {
+        eps[i] = abs(q(xs[i]) - ys[i]);
+    }
+}
+
 
 const char* methodName(int i) {
     switch (i) {
         case 1:
-            return "1";
+            return "3b_runge4";
             break;
         case 2:
-            return "2";
+            return "3b_runge3";
             break;
         case 3:
-            return "3A";
+            return "3b_euler";
         case 4:
             return "3B";
         case 5:
@@ -417,13 +512,13 @@ const char* methodName(int i) {
 double methodP(int i) {
     switch (i) {
         case 1:
-            return 1;
+            return 4;
             break;
         case 2:
             return 4;
             break;
         case 3:
-            return 2;
+            return 4;
         case 4:
             return 4;
         case 5:
@@ -447,7 +542,7 @@ int main(int argc, const char * argv[]) {
     
     const size_t MAX_NUM = 50000;
     
-    auto methods = {&solve1, &solve2, &solve3_a, &solve3_b, &solve4_a, &solve4_b/*, &solve5*/};
+    auto methods = {&solve3_b_runge4, &solve3_b_runge3, &solve3_b_euler};
 //
 //    const double a = 0;
 //    const double b = 1;
@@ -459,13 +554,13 @@ int main(int argc, const char * argv[]) {
     file_max_eps << std::fixed;
     file_max_eps.precision(15);
     
-    file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r" << std::endl;
+    file_max_eps << "N, 3b_runge4, p*, r, 3b_runge3, p*, r, 3b_euler, p*, r," << std::endl;
     //file_max_eps << "N, 1, p*, r, 2, p*, r, 3A, p*, r, 3B, p*, r, 4A, p*, r, 4B, p*, r, 5, p*, r" << std::endl;
     
     std::map<std::string, double> last_eps_max;
-    last_eps_max["1"] = -1;
-    last_eps_max["2"] = -1;
-    last_eps_max["3A"] = -1;
+    last_eps_max["3b_runge4"] = -1;
+    last_eps_max["3b_runge3"] = -1;
+    last_eps_max["3b_euler"] = -1;
     last_eps_max["3B"] = -1;
     last_eps_max["4A"] = -1;
     last_eps_max["4B"] = -1;
